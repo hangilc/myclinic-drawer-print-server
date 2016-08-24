@@ -1,0 +1,27 @@
+{
+  "name": "myclinic-drawer-print-server",
+  "version": "1.0.0",
+  "description": "Print server for myclinic-drawer",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/hangilc/myclinic-drawer-print-server.git"
+  },
+  "keywords": [
+    "Printing"
+  ],
+  "author": "Hangil Chang",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hangilc/myclinic-drawer-print-server/issues"
+  },
+  "homepage": "https://github.com/hangilc/myclinic-drawer-print-server#readme",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0",
+    "myclinic-drawer-printer": "^1.1.4"
+  }
+}
