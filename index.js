@@ -15,8 +15,25 @@ exports.run = function(config){
 	app.use(express.static("static"));
 	app.post("/print", function(req, res){
 		var pages = req.body.pages;
-		console.log("pages", pages);
-		res.send('ok');
+		var setting = req.body.setting;
+		if( setting ){
+			DrawerPrinter.readSetting(setting, function(err, result){
+				if( err ){
+					res.send("error: cannot access setting " + setting);
+					return;
+				}
+				DrawerPrinter.printPages(pages, result);
+				res.send("ok");
+			});
+		} else {
+			var settingData = DrawerPrinter.printerDialog();
+			if( settingData ){
+				DrawerPrinter.printPages(pages, settingData);
+				res.send("ok");
+			} else {
+				res.send("canceled");
+			}
+		}
 	})
 	var port = getConfig(config, "port", 8082);
 	app.listen(port, function(){

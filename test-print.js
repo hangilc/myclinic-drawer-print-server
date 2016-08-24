@@ -29,7 +29,8 @@ var data =
 				["move_to", 10, 10],
 				["line_to", 40, 39]
 			]
-		]
+		],
+	  //setting: "preview"
 	};
 
 req.write(JSON.stringify(data));
