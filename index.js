@@ -51,8 +51,28 @@ exports.run = function(config){
 	});
 	app.put("/setting/:name", function(req, res){
 		var setting = req.params.name;
-		console.log("BODY", req.body);
-		res.send("ok");
+		DrawerPrinter.readSetting(setting, function(err, result){
+			if( err ){
+				res.status(400).send("印刷設定（" + setting + "）を見つけられません");
+				return;
+			}
+			var settingData = result;
+			if( req.body["change-printer"] ){
+				var dialogSetting = DrawerPrinter.printerDialog(result);
+				settingData.devmode = dialogSetting.devmode;
+				settingData.devnames = dialogSetting.devnames;
+			}
+			["dx", "dy"].forEach(function(key){
+				settingData.aux[key] = req.body[key];
+			});
+			DrawerPrinter.saveSetting(setting, settingData, function(err){
+				if( err ){
+					res.send(400).send(err);
+					return;
+				}
+				res.send("ok");
+			})
+		})
 	});
 	app.get("/setting", function(req, res){
 		DrawerPrinter.listSettings(function(err, result){

@@ -88,13 +88,10 @@ document.getElementById(detailButtonId).addEventListener("click", function(event
 				value: result.devmode[key]
 			})
 		});
-		for(var key in result){
-			if( key === "devmode" || key === "devnames" ){
-				continue;
-			}
+		for(var key in result.aux){
 			lines.push({
 				key: key,
-				value: result[key]
+				value: result.aux[key]
 			})
 		}
 		disp.innerHTML = detailTmpl.render({list: lines});
@@ -128,6 +125,9 @@ document.getElementById(editButtonId).addEventListener("click", function(event){
 		var data = {
 			name: setting
 		};
+		for(var key in result.aux){
+			data[key] = result.aux[key];
+		}
 		var html = modifyTmpl.render(data);
 		w.innerHTML = html;
 		console.log(html);
