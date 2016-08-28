@@ -1,4 +1,4 @@
 "use strict";
 
 var printApp = require("./index");
-printApp.run();
+printApp.run({port: 8082});
