@@ -38,7 +38,26 @@ exports.run = function(config){
 				res.send("canceled");
 			}
 		}
-	})
+	});
+	app.get("/setting/:name", function(req, res){
+		var setting = req.params.name;
+		DrawerPrinter.readSetting(setting, function(err, result){
+			if( err ){
+				res.status(400).send("印刷設定（" + setting + "）を見つけられません");
+				return;
+			}
+			res.json(DrawerPrinter.parseSetting(result));
+		})
+	});
+	app.get("/setting", function(req, res){
+		DrawerPrinter.listSettings(function(err, result){
+			if( err ){
+				res.status(400).send(err + "");
+				return;
+			}
+			res.json(result);
+		})
+	});
 	var port = getConfig(config, "port", 8082);
 	app.listen(port, function(){
 		console.log("server (Print Server) listening to " + port);
