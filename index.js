@@ -49,6 +49,11 @@ exports.run = function(config){
 			res.json(DrawerPrinter.parseSetting(result));
 		})
 	});
+	app.put("/setting/:name", function(req, res){
+		var setting = req.params.name;
+		console.log("BODY", req.body);
+		res.send("ok");
+	});
 	app.get("/setting", function(req, res){
 		DrawerPrinter.listSettings(function(err, result){
 			if( err ){

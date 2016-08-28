@@ -17,27 +17,7 @@
 		<button id="printerDeleteButton">削除</button>
 	</div>
 	<div id="detailDisp"></div>
-    <div id="modify-dialog" style="display:block">
-        <div style="border: 1px solid gray; margin:10px 10px 10px 0; width: 400px; padding: 10px;">
-            <h3 style="margin:0 0 10px 0">修正要求</h3>
-            <input type="hidden" id="modify-dialog-name" />
-            <div>
-                <span id="modify-dialog-disp-name"></span>
-            </div>
-            <div class="modify-dialog-row">
-                <input id="modify-dialog-change-printer" type="checkbox" checked> プリンター変更
-            </div>
-            <div class="modify-dialog-row">
-                右シフト：<input id="modify-dialog-dx" type="text" style="width: 5em"/> mm
-            </div>
-            <div class="modify-dialog-row">
-                左シフト：<input id="modify-dialog-dy" type="text"  style="width: 5em"/> mm
-            </div>
-            <div class="modify-dialog-row">
-                <button id="exec-modify-button">実行</button>
-            </div>
-        </div>
-    </div>
+	<div id="modifyWorkArea"></div>
 	<div style="margin:10px 0">
 		<h2>新規</h2>
 		プリンター名：<input type="text" style="width:12em" id="newPrinterNameInput" /> 
