@@ -89,6 +89,16 @@ exports.run = function(config){
 			res.send("ok");
 		})
 	});
+	app.delete("/setting/:name", function(req, res){
+		var setting = req.params.name;
+		DrawerPrinter.deleteSetting(setting, function(err){
+			if( err ){
+				res.send(400).send(err);
+				return;
+			}
+			res.send("ok");
+		});
+	});
 	app.get("/setting", function(req, res){
 		DrawerPrinter.listSettings(function(err, result){
 			if( err ){

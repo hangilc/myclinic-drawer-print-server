@@ -13,6 +13,7 @@ var detailButtonId = "printerDetailButton";
 var detailDispId = "detailDisp";
 var editButtonId = "printerEditButton";
 var modifyWorkAreaId = "modifyWorkArea"
+var deleteButtonId = "printerDeleteButton";
 var newPrinterNameInputId = "newPrinterNameInput";
 var newPrinterButtonId = "newPrinterButton";
 
@@ -133,6 +134,37 @@ document.getElementById(editButtonId).addEventListener("click", function(event){
 		var html = modifyTmpl.render(data);
 		w.innerHTML = html;
 		console.log(html);
+	})
+	.catch(function(err){
+		alert("エラー：" + err.message);
+	});
+});
+
+document.getElementById(deleteButtonId).addEventListener("click", function(event){
+	event.preventDefault();
+	var setting = getSelectedSetting();
+	if( !setting ){
+		return;
+	}
+	if( !confirm("印刷設定（" + setting + "）を本当に削除していいですか？") ){
+		return;
+	}
+	fetch("./setting/" + setting, {
+		method: "DELETE"
+	})
+	.then(function(response){
+		if( !response.ok ){
+			response.text().then(function(text){
+				alert("エラー：" + text);
+			});
+			return;
+		}
+		response.text().then(function(result){
+			if( result !== "ok" ){
+				alert(result);
+				return;
+			}
+		});
 	})
 	.catch(function(err){
 		alert("エラー：" + err.message);
