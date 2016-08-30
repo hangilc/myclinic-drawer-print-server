@@ -74,6 +74,21 @@ exports.run = function(config){
 			})
 		})
 	});
+	app.post("/setting/:name", function(req, res){
+		var setting = req.params.name;
+		var settingData = DrawerPrinter.printerDialog();
+		if( !settingData ){
+			res.send("cancel");
+			return;
+		}
+		DrawerPrinter.saveSetting(setting, settingData, function(err){
+			if( err ){
+				res.send(400).send(err);
+				return;
+			}
+			res.send("ok");
+		})
+	});
 	app.get("/setting", function(req, res){
 		DrawerPrinter.listSettings(function(err, result){
 			if( err ){

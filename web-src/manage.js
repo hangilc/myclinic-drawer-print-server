@@ -13,6 +13,8 @@ var detailButtonId = "printerDetailButton";
 var detailDispId = "detailDisp";
 var editButtonId = "printerEditButton";
 var modifyWorkAreaId = "modifyWorkArea"
+var newPrinterNameInputId = "newPrinterNameInput";
+var newPrinterButtonId = "newPrinterButton";
 
 function formDataObject(formData){
 	var obj = {};
@@ -178,3 +180,29 @@ document.getElementById(modifyWorkAreaId).addEventListener("click", function(eve
 		})
 	}
 });
+
+document.getElementById(newPrinterButtonId).addEventListener("click", function(event){
+	var nameInput = document.getElementById(newPrinterNameInputId);
+	var name = nameInput.value;
+	fetch("./setting/" + name, {
+		method: "POST"
+	})
+	.then(function(response){
+		if( !response.ok ){
+			response.text().then(function(msg){
+				alert("エラー：" + msg);
+			});
+			return; 
+		}
+		response.text().then(function(result){
+			if( result !== "ok" && result !== "cancel" ){
+				alert(result);
+				return;
+			}
+			nameInput.value = "";
+		});
+	})
+	.catch(function(err){
+		alert("エラー：" + err.message);
+	})
+})
