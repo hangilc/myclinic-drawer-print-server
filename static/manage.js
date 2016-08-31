@@ -209,6 +209,10 @@
 			return;
 		}
 		fetchSetting(setting, function(err, result){
+			if( err ){
+				alert(err);
+				return;
+			}
 			var data = {
 				name: setting
 			};
@@ -264,6 +268,7 @@
 		}, done);
 	}
 
+	// delete
 	document.getElementById(deleteButtonId).addEventListener("click", function(event){
 		event.preventDefault();
 		var setting = getSelectedSetting();
@@ -278,9 +283,10 @@
 				alert(err);
 				return;
 			}
-		})
-		fetch("./setting/" + setting, {
-			method: "DELETE"
+			fetchList(function(err, result){
+				clearWorkArea();
+				updateSelect(result);
+			});
 		})
 	});
 
@@ -290,6 +296,7 @@
 		}, done);
 	}
 
+	// create
 	document.getElementById(newPrinterButtonId).addEventListener("click", function(event){
 		var nameInput = document.getElementById(newPrinterNameInputId);
 		var name = nameInput.value;
@@ -299,8 +306,71 @@
 				return;
 			}
 			nameInput.value = "";
+			var settingsList, settingData;
+			conti.execPara([
+				function(done){
+					fetchList(function(err, result){
+						if( err ){
+							done(err);
+							return;
+						}
+						settingsList = result;
+						done();
+					});
+				},
+				function(done){
+					fetchSetting(name, function(err, result){
+						if( err ){
+							done(err);
+							return;
+						}
+						settingData = result;
+						done();
+					})
+				}
+			], function(err){
+				updateSelect(settingsList, name);
+				updateDetail(name, settingData);
+				setWorkAreaMode("detail");
+			});
 		})
 	})
+
+	// on selector change
+	document.getElementById(settingsListId).addEventListener("change", function(event){
+		var opt = document.getElementById(settingsListId).querySelector("option:checked");
+		if( !opt ){
+			return;
+		}
+		var name = opt.value;
+		var mode = getWorkAreaMode();
+		if( mode === "detail" ){
+			fetchSetting(name, function(err, result){
+				if( err ){
+					alert(err);
+					return;
+				}
+				updateDetail(name, result);
+				setWorkAreaMode("detail");
+			})
+		} else if (mode === "edit" ){
+			fetchSetting(name, function(err, result){
+				if( err ){
+					alert(err);
+					return;
+				}
+				var data = {
+					name: name
+				};
+				for(var key in result.aux){
+					data[key] = result.aux[key];
+				}
+				var html = modifyTmpl.render(data);
+				document.getElementById(editWorkAreaId).innerHTML = html;
+				setWorkAreaMode("edit");
+			});
+		}
+	});
 
 /***/ },
 /* 1 */
