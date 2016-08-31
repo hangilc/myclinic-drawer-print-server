@@ -11,9 +11,8 @@ var conti = require("conti");
 
 var settingsListId = "settingsList";
 var detailButtonId = "printerDetailButton";
-var detailDispId = "detailDisp";
+var editWorkAreaId = "editWorkArea";
 var editButtonId = "printerEditButton";
-var modifyWorkAreaId = "modifyWorkArea"
 var deleteButtonId = "printerDeleteButton";
 var newPrinterNameInputId = "newPrinterNameInput";
 var newPrinterButtonId = "newPrinterButton";
@@ -76,6 +75,19 @@ function fetchSetting(name, cb){
 	contiFetchJson("./setting/" + name, {}, cb);
 }
 
+function getWorkAreaMode(){
+	return document.getElementById(editWorkAreaId).getAttribute("data-mode");
+}
+
+function setWorkAreaMode(mode){
+	document.getElementById(editWorkAreaId).setAttribute("data-mode", mode);
+}
+
+function clearWorkArea(){
+	document.getElementById(editWorkAreaId).innerHTML = "";
+	setWorkAreaMode("");
+}
+
 function updateSelect(settings, selected){
 	var list = settings.map(function(item){
 		return {
@@ -88,7 +100,7 @@ function updateSelect(settings, selected){
 	document.getElementById(settingsListId).innerHTML = html;
 }
 
-function updateDetail(settingData){
+function updateDetail(name, settingData){
 	var lines = [];
 	["device", "output"].forEach(function(key){
 		lines.push({
@@ -108,8 +120,8 @@ function updateDetail(settingData){
 			value: settingData.aux[key]
 		})
 	}
-	var disp = document.getElementById(detailDispId);
-	disp.innerHTML = detailTmpl.render({list: lines});
+	var html = detailTmpl.render({name: name, list: lines})
+	document.getElementById(editWorkAreaId).innerHTML = html;
 }
 
 fetchList(function(err, list){
@@ -120,14 +132,14 @@ fetchList(function(err, list){
 	updateSelect(list);
 })
 
+// detail button
 document.getElementById(detailButtonId).addEventListener("click", function(event){
-	var disp = document.getElementById(detailDispId);
-	if( disp.innerHTML !== "" ){
-		disp.innerHTML = "";
-		return;
-	}
 	var setting = getSelectedSetting();
 	if( !setting ){
+		return;
+	}
+	if( getWorkAreaMode() === "detail" ){
+		clearWorkArea();
 		return;
 	}
 	fetchSetting(setting, function(err, result){
@@ -135,14 +147,15 @@ document.getElementById(detailButtonId).addEventListener("click", function(event
 			alert(err);
 			return;
 		}
-		updateDetail(result);
+		updateDetail(setting, result);
+		setWorkAreaMode("detail");
 	})
 });
 
+// edit button
 document.getElementById(editButtonId).addEventListener("click", function(event){
-	var w = document.getElementById(modifyWorkAreaId);
-	if( w.innerHTML !== "" ){
-		w.innerHTML = "";
+	if( getWorkAreaMode() === "edit" ){
+		clearWorkArea();
 		return;
 	}
 	var setting = getSelectedSetting();
@@ -157,7 +170,8 @@ document.getElementById(editButtonId).addEventListener("click", function(event){
 			data[key] = result.aux[key];
 		}
 		var html = modifyTmpl.render(data);
-		w.innerHTML = html;
+		document.getElementById(editWorkAreaId).innerHTML = html;
+		setWorkAreaMode("edit");
 	});
 });
 
@@ -177,11 +191,11 @@ function modifySetting(name, data, cb){
 	})
 }
 
-document.getElementById(modifyWorkAreaId).addEventListener("click", function(event){
+document.getElementById(editWorkAreaId).addEventListener("click", function(event){
 	var target = event.target;
 	if( target.tagName === "BUTTON" && target.classList.contains("exec") ){
 		var setting = target.getAttribute("data-setting");
-		var w = document.getElementById(modifyWorkAreaId);
+		var w = document.getElementById(editWorkAreaId);
 		var form = w.querySelector("form");
 		if( !form ){
 			alert("cannot find form");
@@ -222,23 +236,6 @@ document.getElementById(deleteButtonId).addEventListener("click", function(event
 	fetch("./setting/" + setting, {
 		method: "DELETE"
 	})
-	// .then(function(response){
-	// 	if( !response.ok ){
-	// 		response.text().then(function(text){
-	// 			alert("エラー：" + text);
-	// 		});
-	// 		return;
-	// 	}
-	// 	response.text().then(function(result){
-	// 		if( result !== "ok" ){
-	// 			alert(result);
-	// 			return;
-	// 		}
-	// 	});
-	// })
-	// .catch(function(err){
-	// 	alert("エラー：" + err.message);
-	// });
 });
 
 function createSetting(name, done){
@@ -257,25 +254,4 @@ document.getElementById(newPrinterButtonId).addEventListener("click", function(e
 		}
 		nameInput.value = "";
 	})
-	// fetch("./setting/" + name, {
-	// 	method: "POST"
-	// })
-	// .then(function(response){
-	// 	if( !response.ok ){
-	// 		response.text().then(function(msg){
-	// 			alert("エラー：" + msg);
-	// 		});
-	// 		return; 
-	// 	}
-	// 	response.text().then(function(result){
-	// 		if( result !== "ok" && result !== "cancel" ){
-	// 			alert(result);
-	// 			return;
-	// 		}
-	// 		nameInput.value = "";
-	// 	});
-	// })
-	// .catch(function(err){
-	// 	alert("エラー：" + err.message);
-	// })
 })

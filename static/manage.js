@@ -57,9 +57,8 @@
 
 	var settingsListId = "settingsList";
 	var detailButtonId = "printerDetailButton";
-	var detailDispId = "detailDisp";
+	var editWorkAreaId = "editWorkArea";
 	var editButtonId = "printerEditButton";
-	var modifyWorkAreaId = "modifyWorkArea"
 	var deleteButtonId = "printerDeleteButton";
 	var newPrinterNameInputId = "newPrinterNameInput";
 	var newPrinterButtonId = "newPrinterButton";
@@ -122,6 +121,19 @@
 		contiFetchJson("./setting/" + name, {}, cb);
 	}
 
+	function getWorkAreaMode(){
+		return document.getElementById(editWorkAreaId).getAttribute("data-mode");
+	}
+
+	function setWorkAreaMode(mode){
+		document.getElementById(editWorkAreaId).setAttribute("data-mode", mode);
+	}
+
+	function clearWorkArea(){
+		document.getElementById(editWorkAreaId).innerHTML = "";
+		setWorkAreaMode("");
+	}
+
 	function updateSelect(settings, selected){
 		var list = settings.map(function(item){
 			return {
@@ -134,7 +146,7 @@
 		document.getElementById(settingsListId).innerHTML = html;
 	}
 
-	function updateDetail(settingData){
+	function updateDetail(name, settingData){
 		var lines = [];
 		["device", "output"].forEach(function(key){
 			lines.push({
@@ -154,8 +166,8 @@
 				value: settingData.aux[key]
 			})
 		}
-		var disp = document.getElementById(detailDispId);
-		disp.innerHTML = detailTmpl.render({list: lines});
+		var html = detailTmpl.render({name: name, list: lines})
+		document.getElementById(editWorkAreaId).innerHTML = html;
 	}
 
 	fetchList(function(err, list){
@@ -166,14 +178,14 @@
 		updateSelect(list);
 	})
 
+	// detail button
 	document.getElementById(detailButtonId).addEventListener("click", function(event){
-		var disp = document.getElementById(detailDispId);
-		if( disp.innerHTML !== "" ){
-			disp.innerHTML = "";
-			return;
-		}
 		var setting = getSelectedSetting();
 		if( !setting ){
+			return;
+		}
+		if( getWorkAreaMode() === "detail" ){
+			clearWorkArea();
 			return;
 		}
 		fetchSetting(setting, function(err, result){
@@ -181,14 +193,15 @@
 				alert(err);
 				return;
 			}
-			updateDetail(result);
+			updateDetail(setting, result);
+			setWorkAreaMode("detail");
 		})
 	});
 
+	// edit button
 	document.getElementById(editButtonId).addEventListener("click", function(event){
-		var w = document.getElementById(modifyWorkAreaId);
-		if( w.innerHTML !== "" ){
-			w.innerHTML = "";
+		if( getWorkAreaMode() === "edit" ){
+			clearWorkArea();
 			return;
 		}
 		var setting = getSelectedSetting();
@@ -203,7 +216,8 @@
 				data[key] = result.aux[key];
 			}
 			var html = modifyTmpl.render(data);
-			w.innerHTML = html;
+			document.getElementById(editWorkAreaId).innerHTML = html;
+			setWorkAreaMode("edit");
 		});
 	});
 
@@ -223,11 +237,11 @@
 		})
 	}
 
-	document.getElementById(modifyWorkAreaId).addEventListener("click", function(event){
+	document.getElementById(editWorkAreaId).addEventListener("click", function(event){
 		var target = event.target;
 		if( target.tagName === "BUTTON" && target.classList.contains("exec") ){
 			var setting = target.getAttribute("data-setting");
-			var w = document.getElementById(modifyWorkAreaId);
+			var w = document.getElementById(editWorkAreaId);
 			var form = w.querySelector("form");
 			if( !form ){
 				alert("cannot find form");
@@ -268,23 +282,6 @@
 		fetch("./setting/" + setting, {
 			method: "DELETE"
 		})
-		// .then(function(response){
-		// 	if( !response.ok ){
-		// 		response.text().then(function(text){
-		// 			alert("エラー：" + text);
-		// 		});
-		// 		return;
-		// 	}
-		// 	response.text().then(function(result){
-		// 		if( result !== "ok" ){
-		// 			alert(result);
-		// 			return;
-		// 		}
-		// 	});
-		// })
-		// .catch(function(err){
-		// 	alert("エラー：" + err.message);
-		// });
 	});
 
 	function createSetting(name, done){
@@ -303,27 +300,6 @@
 			}
 			nameInput.value = "";
 		})
-		// fetch("./setting/" + name, {
-		// 	method: "POST"
-		// })
-		// .then(function(response){
-		// 	if( !response.ok ){
-		// 		response.text().then(function(msg){
-		// 			alert("エラー：" + msg);
-		// 		});
-		// 		return; 
-		// 	}
-		// 	response.text().then(function(result){
-		// 		if( result !== "ok" && result !== "cancel" ){
-		// 			alert(result);
-		// 			return;
-		// 		}
-		// 		nameInput.value = "";
-		// 	});
-		// })
-		// .catch(function(err){
-		// 	alert("エラー：" + err.message);
-		// })
 	})
 
 /***/ },
@@ -1139,13 +1115,13 @@
 /* 5 */
 /***/ function(module, exports) {
 
-	module.exports = "{{#list}}\r\n<div>{{key}}: {{value}}</div>\r\n{{/list}}"
+	module.exports = "<div style=\"border: 1px solid gray; margin:10px 10px 10px 0; width: 400px; padding: 10px;\">\r\n    <h3 style=\"margin:0\">印刷設定詳細</h3>\r\n    <div style=\"margin: 6px 0\">\r\n        <b><span>{{name}}</span></b>\r\n    </div>\r\n\t{{#list}}\r\n\t<div>{{key}}: {{value}}</div>\r\n\t{{/list}}\r\n</div>"
 
 /***/ },
 /* 6 */
 /***/ function(module, exports) {
 
-	module.exports = "<div id=\"modify-dialog\" style=\"display:block\">\r\n    <form onsubmit=\"return false\">\r\n        <div style=\"border: 1px solid gray; margin:10px 10px 10px 0; width: 400px; padding: 10px;\">\r\n            <h3 style=\"margin:0 0 10px 0\">修正要求</h3>\r\n            <div>\r\n                <span>{{name}}</span>\r\n            </div>\r\n            <div class=\"modify-dialog-row\">\r\n                <input name=\"change-printer\" type=\"checkbox\" checked> プリンター変更\r\n            </div>\r\n            <div class=\"modify-dialog-row\">\r\n                右シフト：<input name=\"dx\" type=\"text\" style=\"width: 5em\" value=\"{{dx}}\"/> mm\r\n            </div>\r\n            <div class=\"modify-dialog-row\">\r\n                左シフト：<input name=\"dy\" type=\"text\"  style=\"width: 5em\" value=\"{{dy}}\"/> mm\r\n            </div>\r\n            <div class=\"modify-dialog-row\">\r\n                <button class=\"exec\" data-setting=\"{{name}}\">実行</button>\r\n            </div>\r\n        </div>\r\n    </form>\r\n</div>\r\n"
+	module.exports = "<div>\r\n    <form onsubmit=\"return false\">\r\n        <div style=\"border: 1px solid gray; margin:10px 10px 10px 0; width: 400px; padding: 10px;\">\r\n            <h3 style=\"margin:0\">印刷設定修正</h3>\r\n            <div style=\"margin: 6px 0\">\r\n                <b><span>{{name}}</span></b>\r\n            </div>\r\n            <div class=\"modify-dialog-row\">\r\n                <input name=\"change-printer\" type=\"checkbox\" checked> プリンター変更\r\n            </div>\r\n            <div class=\"modify-dialog-row\">\r\n                右シフト：<input name=\"dx\" type=\"text\" style=\"width: 5em\" value=\"{{dx}}\"/> mm\r\n            </div>\r\n            <div class=\"modify-dialog-row\">\r\n                左シフト：<input name=\"dy\" type=\"text\"  style=\"width: 5em\" value=\"{{dy}}\"/> mm\r\n            </div>\r\n            <div class=\"modify-dialog-row\">\r\n                <button class=\"exec\" data-setting=\"{{name}}\">実行</button>\r\n            </div>\r\n        </div>\r\n    </form>\r\n</div>\r\n"
 
 /***/ },
 /* 7 */
