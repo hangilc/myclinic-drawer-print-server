@@ -59,6 +59,10 @@ exports.run = function(config){
 			var settingData = result;
 			if( req.body["change-printer"] ){
 				var dialogSetting = DrawerPrinter.printerDialog(result);
+				if( !dialogSetting ){
+					res.status(500).send("cancel");
+					return;
+				}
 				settingData.devmode = dialogSetting.devmode;
 				settingData.devnames = dialogSetting.devnames;
 			}

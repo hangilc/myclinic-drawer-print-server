@@ -53,6 +53,7 @@
 	var detailTmpl = hogan.compile(detailTmplSrc);
 	var modifyTmplSrc = __webpack_require__(6);
 	var modifyTmpl = hogan.compile(modifyTmplSrc);
+	var conti = __webpack_require__(7);
 
 	var settingsListId = "settingsList";
 	var detailButtonId = "printerDetailButton";
@@ -79,29 +80,91 @@
 		return opt.getAttribute("value");
 	}
 
-	fetch("./setting")
-	.then(function(response){
-		if( !response.ok ){
-			response.text().then(function(text){
-				alert("エラー：" + text);
-			});
-			return;
-		}
-		return response.json();
-	})
-	.then(function(result){
-		var list = result.map(function(item){
+	function contiFetch(url, opt, op, cb){
+		fetch(url, opt)
+		.then(function(response){
+			if( response.ok ){
+				response[op]()
+				.then(function(result){
+					cb(undefined, result);
+				})
+				.catch(function(err){
+					cb(err.message);
+				})
+			} else { 
+				response.text()
+				.then(function(text){
+					cb(text);
+				})
+				.catch(function(err){
+					cb(err.message);
+				})
+			}
+		})
+		.catch(function(err){
+			cb(err.message);
+		})
+	}
+
+	function contiFetchJson(url, opt, cb){
+		contiFetch(url, opt, "json", cb);
+	}
+
+	function contiFetchText(url, opt, cb){
+		contiFetch(url, opt, "text", cb);
+	}
+
+	function fetchList(cb){
+		contiFetchJson("./setting", {}, cb);
+	}
+
+	function fetchSetting(name, cb){
+		contiFetchJson("./setting/" + name, {}, cb);
+	}
+
+	function updateSelect(settings, selected){
+		var list = settings.map(function(item){
 			return {
 				label: item,
-				value: item
+				value: item,
+				selected: item === selected
 			};
-		});
+		})
 		var html = settingsListTmpl.render({list: list});
 		document.getElementById(settingsListId).innerHTML = html;
+	}
+
+	function updateDetail(settingData){
+		var lines = [];
+		["device", "output"].forEach(function(key){
+			lines.push({
+				key: key,
+				value: settingData.devnames[key]
+			})
+		});
+		["paperSize", "defaultSource", "copies", "orientation", "printQuality"].forEach(function(key){
+			lines.push({
+				key: key,
+				value: settingData.devmode[key]
+			})
+		});
+		for(var key in settingData.aux){
+			lines.push({
+				key: key,
+				value: settingData.aux[key]
+			})
+		}
+		var disp = document.getElementById(detailDispId);
+		disp.innerHTML = detailTmpl.render({list: lines});
+	}
+
+	fetchList(function(err, list){
+		if( err ){
+			alert(err);
+			return;
+		}
+		updateSelect(list);
 	})
-	.catch(function(err){
-		alert("エラー：" + err.message);
-	});
 
 	document.getElementById(detailButtonId).addEventListener("click", function(event){
 		var disp = document.getElementById(detailDispId);
@@ -113,41 +176,13 @@
 		if( !setting ){
 			return;
 		}
-		fetch("./setting/" + setting)
-		.then(function(response){
-			if( !response.ok ){
-				response.text().then(function(text){
-					alert("エラー：" + text);
-				});
+		fetchSetting(setting, function(err, result){
+			if( err ){
+				alert(err);
 				return;
 			}
-			return response.json();
+			updateDetail(result);
 		})
-		.then(function(result){
-			var lines = [];
-			["device", "output"].forEach(function(key){
-				lines.push({
-					key: key,
-					value: result.devnames[key]
-				})
-			});
-			["paperSize", "defaultSource", "copies", "orientation", "printQuality"].forEach(function(key){
-				lines.push({
-					key: key,
-					value: result.devmode[key]
-				})
-			});
-			for(var key in result.aux){
-				lines.push({
-					key: key,
-					value: result.aux[key]
-				})
-			}
-			disp.innerHTML = detailTmpl.render({list: lines});
-		})
-		.catch(function(err){
-			alert("エラー：" + err.message);
-		});
 	});
 
 	document.getElementById(editButtonId).addEventListener("click", function(event){
@@ -160,17 +195,7 @@
 		if( !setting ){
 			return;
 		}
-		fetch("./setting/" + setting)
-		.then(function(response){
-			if( !response.ok ){
-				response.text().then(function(text){
-					alert("エラー：" + text);
-				});
-				return;
-			}
-			return response.json();
-		})
-		.then(function(result){
+		fetchSetting(setting, function(err, result){
 			var data = {
 				name: setting
 			};
@@ -179,43 +204,24 @@
 			}
 			var html = modifyTmpl.render(data);
 			w.innerHTML = html;
-			console.log(html);
-		})
-		.catch(function(err){
-			alert("エラー：" + err.message);
 		});
 	});
 
-	document.getElementById(deleteButtonId).addEventListener("click", function(event){
-		event.preventDefault();
-		var setting = getSelectedSetting();
-		if( !setting ){
-			return;
-		}
-		if( !confirm("印刷設定（" + setting + "）を本当に削除していいですか？") ){
-			return;
-		}
-		fetch("./setting/" + setting, {
-			method: "DELETE"
-		})
-		.then(function(response){
-			if( !response.ok ){
-				response.text().then(function(text){
-					alert("エラー：" + text);
-				});
+	function modifySetting(name, data, cb){
+		contiFetchText("./setting/" + name, {
+			method: "PUT",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify(data)
+		}, function(err, result){
+			if( err ){
+				cb(err);
 				return;
 			}
-			response.text().then(function(result){
-				if( result !== "ok" ){
-					alert(result);
-					return;
-				}
-			});
+			cb();
 		})
-		.catch(function(err){
-			alert("エラー：" + err.message);
-		});
-	});
+	}
 
 	document.getElementById(modifyWorkAreaId).addEventListener("click", function(event){
 		var target = event.target;
@@ -228,61 +234,96 @@
 				return;
 			}
 			var formData = new FormData(w.querySelector("form"));
-			for(var pair of formData.entries()){
-				console.log(pair[0], pair[1]);
-			}
-			fetch("./setting/" + setting, {
-				method: "PUT",
-				headers: {
-					"Content-Type": "application/json"
-				},
-				body: JSON.stringify(formDataObject(formData))
-			})
-			.then(function(response){
-				if( !response.ok ){
-					response.text().then(function(msg){
-						alert("エラー：" + msg);
-					});
-					return; 
+			modifySetting(setting, formDataObject(formData), function(err){
+				if( err && err !== "cancel" ){
+					alert(err);
+					return;
 				}
-				response.text().then(function(result){
-					if( result !== "ok" && result !== "cancel" ){
-						alert(result);
-						return;
-					}
-					w.innerHTML = "";
-				});
-			})
-			.catch(function(err){
-				alert("エラー：" + err.message);
+				w.innerHTML = "";
 			})
 		}
 	});
 
+	function deleteSetting(name, done){
+		contiFetchText("./setting/" + name, {
+			method: "DELETE"
+		}, done);
+	}
+
+	document.getElementById(deleteButtonId).addEventListener("click", function(event){
+		event.preventDefault();
+		var setting = getSelectedSetting();
+		if( !setting ){
+			return;
+		}
+		if( !confirm("印刷設定（" + setting + "）を本当に削除していいですか？") ){
+			return;
+		}
+		deleteSetting(setting, function(err){
+			if( err && err !== "cancel" ){
+				alert(err);
+				return;
+			}
+		})
+		fetch("./setting/" + setting, {
+			method: "DELETE"
+		})
+		// .then(function(response){
+		// 	if( !response.ok ){
+		// 		response.text().then(function(text){
+		// 			alert("エラー：" + text);
+		// 		});
+		// 		return;
+		// 	}
+		// 	response.text().then(function(result){
+		// 		if( result !== "ok" ){
+		// 			alert(result);
+		// 			return;
+		// 		}
+		// 	});
+		// })
+		// .catch(function(err){
+		// 	alert("エラー：" + err.message);
+		// });
+	});
+
+	function createSetting(name, done){
+		contiFetchText("./setting/" + name, {
+			method: "POST"
+		}, done);
+	}
+
 	document.getElementById(newPrinterButtonId).addEventListener("click", function(event){
 		var nameInput = document.getElementById(newPrinterNameInputId);
 		var name = nameInput.value;
-		fetch("./setting/" + name, {
-			method: "POST"
-		})
-		.then(function(response){
-			if( !response.ok ){
-				response.text().then(function(msg){
-					alert("エラー：" + msg);
-				});
-				return; 
+		createSetting(name, function(err){
+			if( err && err !== "cancel" ){
+				alert(err);
+				return;
 			}
-			response.text().then(function(result){
-				if( result !== "ok" && result !== "cancel" ){
-					alert(result);
-					return;
-				}
-				nameInput.value = "";
-			});
+			nameInput.value = "";
 		})
-		.catch(function(err){
-			alert("エラー：" + err.message);
-		})
+		// fetch("./setting/" + name, {
+		// 	method: "POST"
+		// })
+		// .then(function(response){
+		// 	if( !response.ok ){
+		// 		response.text().then(function(msg){
+		// 			alert("エラー：" + msg);
+		// 		});
+		// 		return; 
+		// 	}
+		// 	response.text().then(function(result){
+		// 		if( result !== "ok" && result !== "cancel" ){
+		// 			alert(result);
+		// 			return;
+		// 		}
+		// 		nameInput.value = "";
+		// 	});
+		// })
+		// .catch(function(err){
+		// 	alert("エラー：" + err.message);
+		// })
 	})
 
 /***/ },
@@ -1092,7 +1133,7 @@
 /* 4 */
 /***/ function(module, exports) {
 
-	module.exports = "{{#list}}\r\n\t<option value=\"{{value}}\">{{label}}</option>\r\n{{/list}}\r\n"
+	module.exports = "{{#list}}\r\n\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>{{label}}</option>\r\n{{/list}}\r\n"
 
 /***/ },
 /* 5 */
@@ -1105,6 +1146,176 @@
 /***/ function(module, exports) {
 
 	module.exports = "<div id=\"modify-dialog\" style=\"display:block\">\r\n    <form onsubmit=\"return false\">\r\n        <div style=\"border: 1px solid gray; margin:10px 10px 10px 0; width: 400px; padding: 10px;\">\r\n            <h3 style=\"margin:0 0 10px 0\">修正要求</h3>\r\n            <div>\r\n                <span>{{name}}</span>\r\n            </div>\r\n            <div class=\"modify-dialog-row\">\r\n                <input name=\"change-printer\" type=\"checkbox\" checked> プリンター変更\r\n            </div>\r\n            <div class=\"modify-dialog-row\">\r\n                右シフト：<input name=\"dx\" type=\"text\" style=\"width: 5em\" value=\"{{dx}}\"/> mm\r\n            </div>\r\n            <div class=\"modify-dialog-row\">\r\n                左シフト：<input name=\"dy\" type=\"text\"  style=\"width: 5em\" value=\"{{dy}}\"/> mm\r\n            </div>\r\n            <div class=\"modify-dialog-row\">\r\n                <button class=\"exec\" data-setting=\"{{name}}\">実行</button>\r\n            </div>\r\n        </div>\r\n    </form>\r\n</div>\r\n"
+
+/***/ },
+/* 7 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	function iterExec(i, funs, done){
+		if( i >= funs.length ){
+			done();
+			return;
+		}
+		var f = funs[i];
+		f(function(err){
+			if( err ){
+				done(err);
+				return;
+			}
+			iterExec(i+1, funs, done);
+		})
+	}
+
+	exports.exec = function(funs, done){
+		funs = funs.slice();
+		iterExec(0, funs, done);
+	};
+
+	exports.execPara = function(funs, done){
+		if( funs.length === 0 ){
+			done();
+			return;
+		}
+		funs = funs.slice();
+		var n = funs.length;
+		var no_more = false;
+		funs.forEach(function(f){
+			if( no_more ){
+				return;
+			}
+			f(function(err){
+				if( no_more ){
+					return;
+				}
+				if( err ){
+					no_more = true;
+					done(err);
+					return;
+				}
+				n -= 1;
+				if( n === 0 ){
+					done();
+				}
+			})
+		})
+	}
+
+	function iterForEach(i, arr, fn, done){
+		if( i >= arr.length ){
+			done();
+			return;
+		}
+		fn(arr[i], function(err){
+			if( err ){
+				done(err);
+				return;
+			}
+			iterForEach(i+1, arr, fn, done);
+		})
+	}
+
+	exports.forEach = function(arr, fn, done){
+		arr = arr.slice();
+		iterForEach(0, arr, fn, done);
+	};
+
+	exports.forEachPara = function(arr, fn, done){
+		if( arr.length === 0 ){
+			done();
+			return;
+		}
+		arr = arr.slice();
+		var n = arr.length;
+		var no_more = false;
+		arr.forEach(function(ele){
+			if( no_more ){
+				return;
+			}
+			fn(ele, function(err){
+				if( no_more ){
+					return;
+				}
+				if( err ){
+					no_more = true;
+					done(err);
+					return;
+				}
+				n -= 1;
+				if( n === 0 ){
+					done();
+				}
+			})
+		});
+	};
+
+	function Queue(){
+		this.queue = [];
+	}
+
+	Queue.prototype.push = function(fn, cb){
+		this.queue.push({
+			fn: fn,
+			cb: cb
+		});
+		if( this.queue.length === 1 ){
+			this.run();
+		}
+	}
+
+	Queue.prototype.run = function(){
+		if( this.queue.length === 0 ){
+			return;
+		}
+		var entry = this.queue[0];
+		var fn = entry.fn;
+		var cb = entry.cb;
+		var self = this;
+		fn(function(){
+			var args = [].slice.call(arguments);
+			cb.apply(undefined, args);
+			if( self.queue.length > 0 && self.queue[0] === entry ){
+				self.queue.shift();
+				self.run();
+			}
+		})
+	}
+
+	var theQueue = new Queue();
+
+	exports.enqueue = function(fn, cb){
+		theQueue.push(fn, cb);
+	};
+
+	exports.mapPara = function(arr, fn, cb){
+		var index = 0;
+		var dataArr = arr.map(function(value){
+			return {
+				index: index++,
+				value: value
+			}
+		});
+		var retArr = [];
+		exports.forEachPara(dataArr, function(data, done){
+			var value = fn(data.value, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				retArr[data.index] = result;
+				done();
+			});
+		}, function(err){
+			if( err ){
+				cb(err);
+				return;
+			}
+			cb(undefined, retArr);
+		})
+	};
+
+
 
 /***/ }
 /******/ ]);
