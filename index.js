@@ -26,8 +26,12 @@ exports.run = function(config){
 					res.send("印刷設定（" + setting + "）を見つけられません");
 					return;
 				}
-				DrawerPrinter.printPages(pages, result);
-				res.send("ok");
+				var err = DrawerPrinter.printPages(pages, result);
+				if( !err ){
+					res.send("ok");
+				} else {
+					res.send("error: " + err);
+				}
 			});
 		} else {
 			var settingData = DrawerPrinter.printerDialog();

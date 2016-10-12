@@ -30,7 +30,7 @@ var data =
 				["line_to", 40, 39]
 			]
 		],
-	  //setting: "preview"
+	  setting: "pdf"
 	};
 
 req.write(JSON.stringify(data));
