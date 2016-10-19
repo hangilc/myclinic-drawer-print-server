@@ -1,6 +1,6 @@
 {
   "name": "myclinic-drawer-print-server",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Print server for myclinic-drawer",
   "main": "index.js",
   "scripts": {
