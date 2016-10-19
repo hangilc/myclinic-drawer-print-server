@@ -17,13 +17,13 @@ var deleteButtonId = "printerDeleteButton";
 var newPrinterNameInputId = "newPrinterNameInput";
 var newPrinterButtonId = "newPrinterButton";
 
-function formDataObject(formData){
-	var obj = {};
-	for(var pair of formData.entries()){
-		obj[pair[0]] = pair[1];
-	}
-	return obj;
-}
+// function formDataObject(formData){
+// 	var obj = {};
+// 	for(var pair of formData.entries()){
+// 		obj[pair[0]] = pair[1];
+// 	}
+// 	return obj;
+// }
 
 function getSelectedSetting(){
 	var opt = document.getElementById(settingsListId).querySelector("option:checked");
@@ -195,6 +195,28 @@ function modifySetting(name, data, cb){
 	})
 }
 
+function composeEditFormData(form){
+	var inputs = form.querySelectorAll("input");
+	console.log("inputs", inputs);
+	var i, n, node, type;
+	var obj = {};
+	n = inputs.length;
+	for(i=0;i<n;i++){
+		node = inputs[i];
+		var type = node.getAttribute("type");
+		var name = node.getAttribute("name");
+		if( !name ){
+			continue;
+		}
+		if( type === "checkbox" ){
+			obj[name] = node.checked;
+		} else if( type === "text" ){
+			obj[name] = node.value;
+		}
+	}
+	return obj;
+}
+
 document.getElementById(editWorkAreaId).addEventListener("click", function(event){
 	var target = event.target;
 	if( target.tagName === "BUTTON" && target.classList.contains("exec") ){
@@ -205,8 +227,8 @@ document.getElementById(editWorkAreaId).addEventListener("click", function(event
 			alert("cannot find form");
 			return;
 		}
-		var formData = new FormData(w.querySelector("form"));
-		modifySetting(setting, formDataObject(formData), function(err){
+		var formData = composeEditFormData(w.querySelector("form"));
+		modifySetting(setting, formData, function(err){
 			if( err && err !== "cancel" ){
 				alert(err);
 				return;

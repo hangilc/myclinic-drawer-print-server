@@ -63,13 +63,13 @@
 	var newPrinterNameInputId = "newPrinterNameInput";
 	var newPrinterButtonId = "newPrinterButton";
 
-	function formDataObject(formData){
-		var obj = {};
-		for(var pair of formData.entries()){
-			obj[pair[0]] = pair[1];
-		}
-		return obj;
-	}
+	// function formDataObject(formData){
+	// 	var obj = {};
+	// 	for(var pair of formData.entries()){
+	// 		obj[pair[0]] = pair[1];
+	// 	}
+	// 	return obj;
+	// }
 
 	function getSelectedSetting(){
 		var opt = document.getElementById(settingsListId).querySelector("option:checked");
@@ -241,6 +241,28 @@
 		})
 	}
 
+	function composeEditFormData(form){
+		var inputs = form.querySelectorAll("input");
+		console.log("inputs", inputs);
+		var i, n, node, type;
+		var obj = {};
+		n = inputs.length;
+		for(i=0;i<n;i++){
+			node = inputs[i];
+			var type = node.getAttribute("type");
+			var name = node.getAttribute("name");
+			if( !name ){
+				continue;
+			}
+			if( type === "checkbox" ){
+				obj[name] = node.checked;
+			} else if( type === "text" ){
+				obj[name] = node.value;
+			}
+		}
+		return obj;
+	}
+
 	document.getElementById(editWorkAreaId).addEventListener("click", function(event){
 		var target = event.target;
 		if( target.tagName === "BUTTON" && target.classList.contains("exec") ){
@@ -251,8 +273,8 @@
 				alert("cannot find form");
 				return;
 			}
-			var formData = new FormData(w.querySelector("form"));
-			modifySetting(setting, formDataObject(formData), function(err){
+			var formData = composeEditFormData(w.querySelector("form"));
+			modifySetting(setting, formData, function(err){
 				if( err && err !== "cancel" ){
 					alert(err);
 					return;
@@ -371,6 +393,7 @@
 			});
 		}
 	});
+
 
 /***/ },
 /* 1 */
@@ -1195,9 +1218,11 @@
 
 /***/ },
 /* 7 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+
+	(function(exports){
 
 	function iterExec(i, funs, done){
 		if( i >= funs.length ){
@@ -1361,7 +1386,41 @@
 		})
 	};
 
+	exports.fetch = function(url, opt, op, cb){
+		fetch(url, opt)
+		.then(function(response){
+			if( response.ok ){
+				response[op]()
+				.then(function(result){
+					cb(undefined, result);
+				})
+				.catch(function(err){
+					cb(err.message);
+				})
+			} else { 
+				response.text()
+				.then(function(text){
+					cb(text);
+				})
+				.catch(function(err){
+					cb(err.message);
+				})
+			}
+		})
+		.catch(function(err){
+			cb(err.message);
+		})
+	}
 
+	exports.fetchJson = function (url, opt, cb){
+		exports.fetch(url, opt, "json", cb);
+	}
+
+	exports.fetchText = function (url, opt, cb){
+		exports.fetch(url, opt, "text", cb);
+	}
+
+	})( true ? exports : (window.conti = {}));
 
 /***/ }
 /******/ ]);
