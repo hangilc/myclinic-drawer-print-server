@@ -197,7 +197,6 @@ function modifySetting(name, data, cb){
 
 function composeEditFormData(form){
 	var inputs = form.querySelectorAll("input");
-	console.log("inputs", inputs);
 	var i, n, node, type;
 	var obj = {};
 	n = inputs.length;
