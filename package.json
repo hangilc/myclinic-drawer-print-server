@@ -24,7 +24,6 @@
     "body-parser": "^1.15.2",
     "cors": "^2.8.0",
     "express": "^4.14.0",
-    "hogan": "^1.0.2",
     "hogan.js": "^3.0.2",
     "myclinic-drawer-printer": "^1.1.4",
     "raw-loader": "^0.5.1"
