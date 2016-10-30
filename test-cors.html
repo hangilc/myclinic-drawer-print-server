@@ -1,0 +1,21 @@
+<!doctype html>
+
+<html>
+<head>
+
+</head>
+<body>
+	<a href="javascript:void(0)" id="setting">Setting</a>
+	<script>
+		document.getElementById("setting").addEventListener("click", function(event){
+			fetch("http://localhost:8082/setting")
+			.then(function(response){
+				var data = response.json()
+				.then(function(data){
+					console.log(data);
+				});
+			});
+		});
+	</script>
+</body>
+</html>

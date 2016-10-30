@@ -15,6 +15,7 @@ exports.run = function(config){
 	app.use(bodyParser.json());
 	app.use(express.static("static"));
 	// app.use(cors());
+	app.disable("etag");
 	app.post("/print", function(req, res){
 		var pages = req.body.pages;
 		var setting = req.body.setting;
