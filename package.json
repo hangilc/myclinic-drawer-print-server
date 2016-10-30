@@ -26,6 +26,7 @@
     "express": "^4.14.0",
     "hogan.js": "^3.0.2",
     "myclinic-drawer-printer": "^1.1.4",
+    "netmask": "^1.0.6",
     "raw-loader": "^0.5.1"
   },
   "devDependencies": {

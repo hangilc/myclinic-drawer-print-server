@@ -2,7 +2,7 @@
 
 var express = require("express");
 var bodyParser = require("body-parser");
-var cors = require("cors");
+// var cors = require("cors");
 var DrawerPrinter = require("myclinic-drawer-printer");
 
 function getConfig(config, key, defaultValue){
@@ -14,7 +14,7 @@ exports.run = function(config){
 	app.use(bodyParser.urlencoded({extended: false}));
 	app.use(bodyParser.json());
 	app.use(express.static("static"));
-	app.use(cors());
+	// app.use(cors());
 	app.post("/print", function(req, res){
 		var pages = req.body.pages;
 		var setting = req.body.setting;
