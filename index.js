@@ -1,24 +1,13 @@
 "use strict";
 
-var express = require("express");
-var bodyParser = require("body-parser");
-var cors = require("cors");
 var DrawerPrinter = require("myclinic-drawer-printer");
 
-function getConfig(config, key, defaultValue){
-	return (config && key in config) ? config[key] : defaultValue;
-}
+exports.staticDir = __dirname + "/static";
 
-exports.run = function(config){
-	var app = express();
-	app.use(bodyParser.urlencoded({extended: false}));
-	app.use(bodyParser.json());
-	app.use(express.static("static"));
-	app.use(cors());
+exports.initApp = function(app, config){
 	app.post("/print", function(req, res){
 		var pages = req.body.pages;
 		var setting = req.body.setting;
-		console.log("PRINT", setting);
 		if( setting ){
 			DrawerPrinter.readSetting(setting, function(err, result){
 				if( err ){
@@ -114,8 +103,4 @@ exports.run = function(config){
 			res.json(result);
 		})
 	});
-	var port = getConfig(config, "port", 8082);
-	app.listen(port, function(){
-		console.log("server (Print Server) listening to " + port);
-	})
 };
