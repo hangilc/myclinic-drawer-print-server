@@ -4,7 +4,14 @@ var DrawerPrinter = require("myclinic-drawer-printer");
 
 exports.staticDir = __dirname + "/static";
 
+function setupSettingDir(pathname){
+	if( pathname ){
+		DrawerPrinter.setSettingDir(pathname);
+	}
+}
+
 exports.initApp = function(app, config){
+	setupSettingDir(config["setting-dir"]);
 	app.post("/print", function(req, res){
 		var pages = req.body.pages;
 		var setting = req.body.setting;

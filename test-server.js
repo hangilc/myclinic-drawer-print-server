@@ -3,7 +3,9 @@
 var App = require("./index");
 var express = require("express");
 var bodyParser = require("body-parser");
-var config = {};
+var config = {
+	"setting-dir": "printer-settings-fail"
+};
 
 var app = express();
 var sub = express();
