@@ -210,7 +210,11 @@ function composeEditFormData(form){
 		if( type === "checkbox" ){
 			obj[name] = node.checked;
 		} else if( type === "text" ){
-			obj[name] = node.value;
+			if( name == "dx" || name == "dy" || name == "scale" ){
+				obj[name] = +node.value;
+			} else {
+				obj[name] = node.value;
+			}
 		}
 	}
 	return obj;

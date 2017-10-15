@@ -42,7 +42,7 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 
@@ -256,7 +256,11 @@
 			if( type === "checkbox" ){
 				obj[name] = node.checked;
 			} else if( type === "text" ){
-				obj[name] = node.value;
+				if( name == "dx" || name == "dy" || name == "scale" ){
+					obj[name] = +node.value;
+				} else {
+					obj[name] = node.value;
+				}
 			}
 		}
 		return obj;
@@ -394,9 +398,9 @@
 	});
 
 
-/***/ },
+/***/ }),
 /* 1 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/*
 	 *  Copyright 2011 Twitter, Inc.
@@ -421,9 +425,9 @@
 	module.exports = Hogan;
 
 
-/***/ },
+/***/ }),
 /* 2 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/*
 	 *  Copyright 2011 Twitter, Inc.
@@ -850,9 +854,9 @@
 	})( true ? exports : Hogan);
 
 
-/***/ },
+/***/ }),
 /* 3 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/*
 	 *  Copyright 2011 Twitter, Inc.
@@ -1197,27 +1201,27 @@
 	})( true ? exports : Hogan);
 
 
-/***/ },
+/***/ }),
 /* 4 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	module.exports = "{{#list}}\r\n\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>{{label}}</option>\r\n{{/list}}\r\n"
 
-/***/ },
+/***/ }),
 /* 5 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	module.exports = "<div style=\"border: 1px solid gray; margin:10px 10px 10px 0; width: 400px; padding: 10px;\">\r\n    <h3 style=\"margin:0\">印刷設定詳細</h3>\r\n    <div style=\"margin: 6px 0\">\r\n        <b><span>{{name}}</span></b>\r\n    </div>\r\n\t{{#list}}\r\n\t<div>{{key}}: {{value}}</div>\r\n\t{{/list}}\r\n</div>"
 
-/***/ },
+/***/ }),
 /* 6 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
-	module.exports = "<div>\r\n    <form onsubmit=\"return false\">\r\n        <div style=\"border: 1px solid gray; margin:10px 10px 10px 0; width: 400px; padding: 10px;\">\r\n            <h3 style=\"margin:0\">印刷設定修正</h3>\r\n            <div style=\"margin: 6px 0\">\r\n                <b><span>{{name}}</span></b>\r\n            </div>\r\n            <div class=\"modify-dialog-row\">\r\n                <input name=\"change-printer\" type=\"checkbox\" checked> プリンター変更\r\n            </div>\r\n            <div class=\"modify-dialog-row\">\r\n                右シフト：<input name=\"dx\" type=\"text\" style=\"width: 5em\" value=\"{{dx}}\"/> mm\r\n            </div>\r\n            <div class=\"modify-dialog-row\">\r\n                左シフト：<input name=\"dy\" type=\"text\"  style=\"width: 5em\" value=\"{{dy}}\"/> mm\r\n            </div>\r\n            <div class=\"modify-dialog-row\">\r\n                <button class=\"exec\" data-setting=\"{{name}}\">実行</button>\r\n            </div>\r\n        </div>\r\n    </form>\r\n</div>\r\n"
+	module.exports = "<div>\r\n    <form onsubmit=\"return false\">\r\n        <div style=\"border: 1px solid gray; margin:10px 10px 10px 0; width: 400px; padding: 10px;\">\r\n            <h3 style=\"margin:0\">印刷設定修正</h3>\r\n            <div style=\"margin: 6px 0\">\r\n                <b><span>{{name}}</span></b>\r\n            </div>\r\n            <div class=\"modify-dialog-row\">\r\n                <input name=\"change-printer\" type=\"checkbox\" checked> プリンター変更\r\n            </div>\r\n            <div class=\"modify-dialog-row\">\r\n                拡大：<input name=\"scale\" type=\"text\" style=\"width: 5em\" value=\"{{scale}}\"> 倍\r\n            </div>\r\n            <div class=\"modify-dialog-row\">\r\n                右シフト：<input name=\"dx\" type=\"text\" style=\"width: 5em\" value=\"{{dx}}\"/> mm\r\n            </div>\r\n            <div class=\"modify-dialog-row\">\r\n                下シフト：<input name=\"dy\" type=\"text\"  style=\"width: 5em\" value=\"{{dy}}\"/> mm\r\n            </div>\r\n            <div class=\"modify-dialog-row\">\r\n                <button class=\"exec\" data-setting=\"{{name}}\">実行</button>\r\n            </div>\r\n        </div>\r\n    </form>\r\n</div>\r\n"
 
-/***/ },
+/***/ }),
 /* 7 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 
@@ -1412,14 +1416,29 @@
 	}
 
 	exports.fetchJson = function (url, opt, cb){
-		exports.fetch(url, opt, "json", cb);
+		exports.fetch(url, opt, "json", function(err, result){
+			setTimeout(function(){
+				cb(err, result);
+			}, 0);
+	//		setImmediate(function(){
+	//			cb(err, result);
+	//		});
+		});
 	}
 
 	exports.fetchText = function (url, opt, cb){
-		exports.fetch(url, opt, "text", cb);
+		exports.fetch(url, opt, "text", function(err, result){
+			setTimeout(function(){
+				cb(err, result);
+			}, 0);
+	//		setImmediate(function(){
+	//			cb(err, result);
+	//		});
+		});
 	}
 
 	})( true ? exports : (window.conti = {}));
 
-/***/ }
+
+/***/ })
 /******/ ]);

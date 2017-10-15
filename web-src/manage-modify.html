@@ -9,10 +9,13 @@
                 <input name="change-printer" type="checkbox" checked> プリンター変更
             </div>
             <div class="modify-dialog-row">
+                拡大：<input name="scale" type="text" style="width: 5em" value="{{scale}}"> 倍
+            </div>
+            <div class="modify-dialog-row">
                 右シフト：<input name="dx" type="text" style="width: 5em" value="{{dx}}"/> mm
             </div>
             <div class="modify-dialog-row">
-                左シフト：<input name="dy" type="text"  style="width: 5em" value="{{dy}}"/> mm
+                下シフト：<input name="dy" type="text"  style="width: 5em" value="{{dy}}"/> mm
             </div>
             <div class="modify-dialog-row">
                 <button class="exec" data-setting="{{name}}">実行</button>

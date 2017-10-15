@@ -64,7 +64,7 @@ exports.initApp = function(app, config){
 					settingData.devnames = dialogSetting.devnames;
 				}
 			}
-			["dx", "dy"].forEach(function(key){
+			["scale", "dx", "dy"].forEach(function(key){
 				settingData.aux[key] = req.body[key];
 			});
 			DrawerPrinter.saveSetting(setting, settingData, function(err){
