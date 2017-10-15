@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/hangilc/myclinic-drawer-print-server#readme",
   "dependencies": {
-    "myclinic-drawer-printer": "^1.1.4"
+    "myclinic-drawer-printer": "^1.4.0"
   },
   "devDependencies": {
     "hogan.js": "^3.0.2",
